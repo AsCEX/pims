@@ -1,0 +1,10 @@
+
+
+form input.error{
+    border: 2px solid #ffc1c1;
+    background: #fff1f3;
+}
+
+label.error{
+    display:none!important;
+}
