@@ -49,4 +49,19 @@ class Procurement_plan extends MY_Controller {
         exit;
 
     }
+
+    public function getProcurement(){
+
+        $office = isset($_POST['office']) ? $_POST['office'] : 0;
+
+        $ppmp = $this->ppmp_model->getProcurementPlanWhere(array('office_id' => $office));
+
+        $data['data'] = array();
+
+        foreach($ppmp as $p){
+            $data['data'][] = array($p->ppmp_detail_id, $p->code, $p->description);
+        }
+
+        echo json_encode($data);
+    }
 }

@@ -31,11 +31,12 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
+                        <button class="btn btn-success btn-lg">Edit PR Details</button><br /><br />
+                        <form method="POST" id="edit_pr_items" action="">
                         <?php foreach($pr as $p): ?>
 
-                            <button class="btn btn-success btn-lg">Edit PR Details</button><br /><br />
-                            <input type="hidden" id="pr_quarter" value="<?php echo $p->quarter; ?>" />
-                            <input type="hidden" id="pr_id" value="<?php echo $p->pr_id; ?>" />
+                            <input type="hidden" name="pr_quarter" id="pr_quarter" value="<?php echo $p->quarter; ?>" />
+                            <input type="hidden" name="pr_id" id="pr_id" value="<?php echo $p->pr_id; ?>" />
                             <table class="table table-bordered table-striped">
                                 <tr>
                                     <td width="30%">Department: <?php echo $p->dept_name; ?></td>
@@ -68,7 +69,7 @@
                             </table>
                             <br /><br />
 
-                            <button class="btn btn-success btn-lg" id="add-pr-items" data-quarter="<?php echo $p->quarter; ?>" data-id="<?php echo $p->pr_id; ?>" >Add Items</button><br /><br />
+                            <!--<button class="btn btn-success btn-lg" id="add-pr-items" data-quarter="<?php /*echo $p->quarter; */?>" data-id="<?php /*echo $p->pr_id; */?>" >Add Items</button><br /><br />-->
                             <table class="table table-bordered">
                                 <tr></tr>
                                 <tr>
@@ -93,6 +94,8 @@
                                         <td align="right"><?php echo number_format($spec->cost, 2); ?></td>
                                     </tr>
 
+
+                                    <?php $item_details = $this->pr_model->getPurchaseItemDetails($spec->id); ?>
                                         <tr>
                                             <td></td>
                                             <td></td>
@@ -103,84 +106,211 @@
                                                     <div class="box-body">
                                                         <div class="form-group">
                                                             <label></label>
-                                                            <textarea name="description" class="textarea" placeholder="Specification text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;">
+                                                            <textarea name="pr[<?php echo $spec->id; ?>][item_detail_desc]" class="textarea" placeholder="Specification text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;">
                                                             <?php echo $spec->description; ?>
                                                             </textarea>
                                                         </div>
 
                                                         <label>Item Specifications</label>
                                                         <div class="repeater-default-values">
-                                                            <div data-repeater-list="car">
-                                                                <div data-repeater-item class="pr-items-repeater">
-                                                                    <div class="form-group col-md-4">
-
-                                                                        <div class="col-md-12">
-                                                                            <label>Specs</label>
-                                                                            <input type="text" name="name" value="" placeholder="Specifications" class="form-control input-lg"/>
-                                                                        </div>
-
-                                                                        <div class="col-md-12">
-                                                                            <label>Description</label>
-                                                                            <textarea class="form-control input-lg" name="desc"></textarea>
-                                                                        </div>
-                                                                        <div class="col-md-12">
-                                                                            <label>Cost</label>
-                                                                            <input type="text" name="name" value="" placeholder="Specs" class="form-control input-lg"/>
-                                                                        </div>
-
-
-
-                                                                        <div class="clearfix"></div>
-
-
-                                                                    </div>
-                                                                    <div class="form-group col-md-7">
-
-                                                                        <!-- innner repeater -->
-                                                                        <label>Sub Specs</label>
-                                                                        <div class="inner-repeater" >
-                                                                            <div data-repeater-list="inner-list">
-                                                                                <div data-repeater-item>
-                                                                                    <div class="form-group">
-                                                                                        <div class="col-md-2">
-                                                                                            <input type="text" name="qty" value="" placeholder="0" class="form-control input-lg"/>
-                                                                                        </div>
-
-                                                                                        <div class="col-md-4">
-                                                                                            <select name="unit_id" class="form-control input-lg">
-                                                                                                <option value="">Units...</option>
-                                                                                                <option value="1">TEST</option>
-                                                                                            </select>
-                                                                                        </div>
-
-                                                                                        <div class="col-md-5">
-                                                                                            <input type="text" name="name" value="" placeholder="Name" class="form-control input-lg"/>
-                                                                                        </div>
-                                                                                        <div class="col-md-1">
-                                                                                      <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
-                                                                                        <span class="glyphicon glyphicon-remove"></span>
-                                                                                      </span>
-                                                                                        </div>
-                                                                                        <div class="clearfix"></div>
-                                                                                    </div>
-
-                                                                                </div>
+                                                            <div data-repeater-list="pr[<?php echo $spec->id; ?>][pr_items]">
+                                                                <?php if($item_details): ?>
+                                                                <?php foreach( $item_details as $item): ?>
+                                                                    <div data-repeater-item class="pr-items-repeater">
+                                                                        <div class="form-group col-md-4">
+                                                                            <input type="hidden" name="pr_item_detail_id" value="<?php echo $item->id; ?>" />
+                                                                            <div class="col-md-12">
+                                                                                <label>Specs</label>
+                                                                                <input type="text" name="specs_name" value="<?php echo $item->title; ?>" placeholder="Specifications" class="form-control input-lg"/>
                                                                             </div>
 
-                                                                              <span data-repeater-create class="btn btn-info btn-md">
-                                                                                <span class="glyphicon glyphicon-plus"></span> Add
+                                                                            <div class="col-md-12">
+                                                                                <label>Description</label>
+                                                                                <textarea class="form-control input-lg" name="specs_desc"><?php echo $item->description; ?></textarea>
+                                                                            </div>
+                                                                            <div class="col-md-12">
+                                                                                <label>Cost</label>
+                                                                                <input type="text" name="specs_cost" value="<?php echo $item->cost; ?>" placeholder="0" class="form-control input-lg"/>
+                                                                            </div>
 
+
+
+                                                                            <div class="clearfix"></div>
+
+
+                                                                        </div>
+                                                                        <div class="form-group col-md-7">
+
+                                                                            <!-- innner repeater -->
+                                                                            <label>Sub Specs</label>
+                                                                            <div class="inner-repeater" >
+                                                                                <div data-repeater-list="item_details">
+                                                                                    <?php
+                                                                                    $item_specs = $this->pr_model->getPRItemSpecs($item->id);
+                                                                                    if($item_specs){
+                                                                                    foreach($item_specs as $key => $spec):
+                                                                                    ?>
+                                                                                    <div data-repeater-item>
+                                                                                        <input type="hidden" name="pr_item_detail_specs_id" value="<?php echo $spec->specs_id; ?>" />
+                                                                                        <div class="form-group">
+                                                                                            <div class="col-md-2">
+                                                                                                <input style="text-align:right;" type="text" name="qty" value="<?php echo number_format($spec->qty, 2); ?>" placeholder="0" class="form-control input-lg"/>
+                                                                                            </div>
+
+                                                                                            <div class="col-md-2">
+                                                                                                <select name="unit_id" class="form-control input-lg">
+                                                                                                    <option value="">Select Unit</option>
+                                                                                                    <?php foreach($units as $unit): ?>
+                                                                                                        <option value="<?php echo $unit->id; ?>" <?php echo ($spec->unit_id == $unit->id) ? "selected" : ""; ?> ><?php echo $unit->unit_name; ?></option>
+                                                                                                    <?php endforeach; ?>
+                                                                                                </select>
+                                                                                            </div>
+
+                                                                                            <div class="col-md-3">
+                                                                                                <input type="text" name="name" value="<?php echo $spec->name; ?>" placeholder="Name" class="form-control input-lg"/>
+                                                                                            </div>
+                                                                                            <div class="col-md-4">
+                                                                                                <input style="text-align:right;" type="text" name="cost" value="<?php echo number_format($spec->cost, 2); ?>" placeholder="Name" class="form-control input-lg"/>
+                                                                                            </div>
+                                                                                            <div class="col-md-1">
+                                                                                              <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
+                                                                                                <span class="glyphicon glyphicon-remove"></span>
+                                                                                              </span>
+                                                                                            </div>
+                                                                                            <div class="clearfix"></div>
+                                                                                        </div>
+
+                                                                                    </div>
+                                                                                    <?php endforeach; ?>
+                                                                                    <?php }else{ ?>
+
+                                                                                        <div data-repeater-item>
+                                                                                            <input type="hidden" name="pr_item_detail_specs_id" value="" />
+                                                                                            <div class="form-group">
+                                                                                                <div class="col-md-2">
+                                                                                                    <input style="text-align:right;" type="text" name="qty" value="" placeholder="0" class="form-control input-lg"/>
+                                                                                                </div>
+
+                                                                                                <div class="col-md-2">
+                                                                                                    <select name="unit_id" class="form-control input-lg">
+                                                                                                        <option value="">Select Unit</option>
+                                                                                                        <?php foreach($units as $unit): ?>
+                                                                                                            <option value="<?php echo $unit->id; ?>" ><?php echo $unit->unit_name; ?></option>
+                                                                                                        <?php endforeach; ?>
+                                                                                                    </select>
+                                                                                                </div>
+
+                                                                                                <div class="col-md-3">
+                                                                                                    <input type="text" name="name" value="" placeholder="Name" class="form-control input-lg"/>
+                                                                                                </div>
+                                                                                                <div class="col-md-4">
+                                                                                                    <input style="text-align:right;" type="text" name="cost" value="" placeholder="Name" class="form-control input-lg"/>
+                                                                                                </div>
+                                                                                                <div class="col-md-1">
+                                                                                                  <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
+                                                                                                    <span class="glyphicon glyphicon-remove"></span>
+                                                                                                  </span>
+                                                                                                </div>
+                                                                                                <div class="clearfix"></div>
+                                                                                            </div>
+
+                                                                                        </div>
+                                                                                    <?php } ?>
+                                                                                </div>
+
+                                                                                  <span data-repeater-create class="btn btn-info btn-md">
+                                                                                    <span class="glyphicon glyphicon-plus"></span> Add
+
+                                                                                  </span>
+                                                                            </div>
+
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                              <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
+                                                                                <span class="glyphicon glyphicon-remove"></span>
                                                                               </span>
                                                                         </div>
+                                                                        <div class="clearfix"></div>
+                                                                    </div>
+                                                                <?php endforeach; ?>
+                                                                <?php else: ?>
 
+                                                                    <div data-repeater-item class="pr-items-repeater">
+                                                                        <div class="form-group col-md-4">
+
+                                                                            <input type="hidden" name="pr_item_detail_id" value="" />
+                                                                            <div class="col-md-12">
+                                                                                <label>Specs</label>
+                                                                                <input type="text" name="specs_name" value="" placeholder="Specifications" class="form-control input-lg"/>
+                                                                            </div>
+
+                                                                            <div class="col-md-12">
+                                                                                <label>Description</label>
+                                                                                <textarea class="form-control input-lg" name="specs_desc"></textarea>
+                                                                            </div>
+                                                                            <div class="col-md-12">
+                                                                                <label>Cost</label>
+                                                                                <input type="text" name="specs_cost" value="" placeholder="0" class="form-control input-lg"/>
+                                                                            </div>
+                                                                            <div class="clearfix"></div>
+
+
+                                                                        </div>
+                                                                        <div class="form-group col-md-7">
+
+                                                                            <!-- innner repeater -->
+                                                                            <label>Sub Specs</label>
+                                                                            <div class="inner-repeater" >
+                                                                                <div data-repeater-list="item_details">
+                                                                                        <div data-repeater-item>
+
+                                                                                            <input type="hidden" name="pr_item_detail_specs_id" value="" />
+                                                                                            <div class="form-group">
+                                                                                                <div class="col-md-2">
+                                                                                                    <input style="text-align:right;" type="text" name="qty" value="" placeholder="0" class="form-control input-lg"/>
+                                                                                                </div>
+
+                                                                                                <div class="col-md-2">
+                                                                                                    <select name="unit_id" class="form-control input-lg">
+                                                                                                        <option value="">Select Unit</option>
+                                                                                                        <?php foreach($units as $unit): ?>
+                                                                                                            <option value="<?php echo $unit->id; ?>" ><?php echo $unit->unit_name; ?></option>
+                                                                                                        <?php endforeach; ?>
+                                                                                                    </select>
+                                                                                                </div>
+
+                                                                                                <div class="col-md-3">
+                                                                                                    <input type="text" name="name" value="" placeholder="Name" class="form-control input-lg"/>
+                                                                                                </div>
+                                                                                                <div class="col-md-4">
+                                                                                                    <input style="text-align:right;" type="text" name="cost" value="" placeholder="Name" class="form-control input-lg"/>
+                                                                                                </div>
+                                                                                                <div class="col-md-1">
+                                                                                                  <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
+                                                                                                    <span class="glyphicon glyphicon-remove"></span>
+                                                                                                  </span>
+                                                                                                </div>
+                                                                                                <div class="clearfix"></div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                  <span data-repeater-create class="btn btn-info btn-md">
+                                                                                    <span class="glyphicon glyphicon-plus"></span> Add
+
+                                                                                  </span>
+                                                                            </div>
+
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                              <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
+                                                                                <span class="glyphicon glyphicon-remove"></span>
+                                                                              </span>
+                                                                        </div>
+                                                                        <div class="clearfix"></div>
                                                                     </div>
-                                                                    <div class="col-md-1">
-                                                                          <span data-repeater-delete class="btn btn-danger btn-sm pull-right">
-                                                                            <span class="glyphicon glyphicon-remove"></span>
-                                                                          </span>
-                                                                    </div>
-                                                                    <div class="clearfix"></div>
-                                                                </div>
+                                                                <?php endif; ?>
+
                                                             </div>
 
                                                             <div class="form-group">
@@ -197,57 +327,12 @@
                                             <td></td>
                                         </tr>
 
-                                    <?php $item_details = $this->pr_model->getPurchaseItemDetails($spec->id); ?>
-                                    <?php if($item_details): ?>
-                                        <?php foreach($item_details as $key=>$item): ?>
-                                            <tr>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td>
-                                                    <b><?php echo chr($key+65) . ". " . $item->title; ?></li></b><br />
-                                                    <?php echo $item->description; ?>
-                                                </td>
-                                                <td align="right"><?php echo ($item->cost) ? number_format($item->cost, 2) : ""; ?></td>
-                                                <td align="right"></td>
-                                            </tr>
-                                            <?php
-                                            $item_specs = $this->pr_model->getPRItemSpecs($item->id);
-                                            foreach($item_specs as $key => $spec):
-                                                ?>
-                                                <tr>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td>
-                                                        <table width="50%" border="0" style="margin-left:20px;">
-                                                            <tr>
-                                                                <td width="20%"><?php echo number_format($spec->qty, 0) . " " . strtolower($spec->unit_name); ?></td>
-                                                                <td width="80%"><?php echo $spec->name; ?></td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                    <td align="right"><?php echo number_format($spec->cost, 2); ?></td>
-                                                    <td align="right"></td>
-                                                </tr>
-
-                                            <?php endforeach; ?>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                    <?php $pr_total_cost += $spec->cost; ?>
                                 <?php endforeach; ?>
-
-                                <!--<tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td align="right"><b>Total: </b></td>
-                                    <td align="right"></td>
-                                    <td align="right"><b><?php /*echo number_format($pr_total_cost,2); */?></b></td>
-                                </tr>-->
 
                             </table>
                         <?php endforeach; ?>
+                            <input type="submit" />
+                        </form>
 
                     </div>
             </section>

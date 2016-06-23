@@ -55,6 +55,45 @@ class Procurement_plan_model extends CI_Model
         return $rs->result();
     }
 
+    public function getProcurementPlanWhere($param = array()){
+
+        /*$this->db->select("
+            {$this->procurement_plan_table}.id as ppmp_id,
+            {$this->procurement_details_table}.id as ppmp_detail_id,
+            {$this->procurement_details_table}.code,
+            {$this->procurement_details_table}.description,
+            {$this->procurement_details_table}.unit,
+            {$this->procurement_details_table}.budget,
+            sum({$this->procurement_schedules_table}.value) as qty,
+            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
+            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
+        ");*/
+        $this->db->select("
+            {$this->procurement_details_table}.id as ppmp_detail_id,
+            {$this->procurement_details_table}.code,
+            {$this->procurement_details_table}.description,
+            {$this->units_table}.unit_name,
+            {$this->procurement_details_table}.budget,
+            COALESCE(sum({$this->procurement_schedules_table}.value), 0) as qty,
+            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
+            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
+        ");
+
+        if($param){
+            foreach($param as $k=>$p){
+                $this->db->where("{$this->procurement_details_table}." . $k , $p);
+            }
+        }
+
+        $this->db->join("{$this->units_table}","{$this->units_table}.id = {$this->procurement_details_table}.unit","left");
+        $this->db->join("{$this->procurement_schedules_table}","{$this->procurement_schedules_table}.ppmp_details_id = {$this->procurement_details_table}.id","left");
+        $this->db->group_by("{$this->procurement_details_table}.id");
+        $this->db->order_by("{$this->procurement_details_table}.created_date");
+        $rs = $this->db->get($this->procurement_details_table);
+
+        return $rs->result();
+    }
+
     public function create($data){
         $insert = array(
             'code'          => $data['code'],

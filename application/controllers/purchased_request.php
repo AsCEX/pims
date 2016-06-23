@@ -55,23 +55,31 @@ class Purchased_request extends MY_Controller {
 
 
     public function add_purchase_request(){
+
         $pr_id = $this->pr_model->create($_POST);
 
-       /* if($pr_id){
+        $pr_items = (isset($_POST['ppmp_id'])) ? $_POST['ppmp_id'] : array();
+        $pr_quarter = $_POST['quarter'];
 
-            foreach($_POST['ppmp_id'] as $ppmp_id) {
+       if($pr_id){
+
+            foreach($pr_items as $ppmp_id) {
                 $ppmp = $this->ppmp_model->getProcurementPlan($ppmp_id);
                 $ppmp = reset($ppmp);
 
-                $scheds = explode(",", $ppmp->sched_values);
+                $scheds = explode(",", $ppmp->scheds);
+                $sched_values = explode(",", $ppmp->sched_values);
 
                 $months_in_a_year = 12;
                 $quarter = 3; //3 months
-                $start_month = ($_POST['quarter']-1) * $quarter;
+                $start_month = ($pr_quarter-1) * $quarter;
                 $qty = 0;
-                $total_qty = array_sum($scheds);
-                for($i = $start_month+1; $i<=$start_month+$quarter; $i++){
-                    $qty += $scheds[$i];
+                $total_qty = array_sum($sched_values);
+
+                foreach($scheds as $key=>$sched){
+                    if($sched > $start_month && $sched < $start_month+$quarter){
+                        $qty += $sched_values[$key];
+                    }
                 }
 
                 $budget = ($ppmp->budget / $total_qty) * $qty;
@@ -81,14 +89,15 @@ class Purchased_request extends MY_Controller {
                     'pr_id'             => $pr_id,
                     'ppmp_details_id'   => $ppmp->ppmp_detail_id,
                     'qty'               => $qty,
-                    'description'       => $ppmp->description,
+                    'description'       => '',
                     'cost'              => $budget
                 );
+
 
                 $this->pr_model->create_purchase_items($pr_items);
 
             }
-        }*/
+        }
 
         redirect('purchased_request/edit_items/' . $pr_id);
 
@@ -136,9 +145,53 @@ class Purchased_request extends MY_Controller {
 
     public function edit_items($pr_id){
 
+        if(isset($_POST['pr']) && $_POST['pr'] ){
+
+            foreach($_POST['pr'] as $key=>$pr){
+                $pr_items = array(
+                    'description'   => $pr['item_detail_desc']
+                );
+
+                $this->pr_model->update_purchase_items($key, $pr_items);
+
+                foreach($pr['pr_items'] as $pr_item){
+                    if($pr_item['specs_name'] != "" || $pr_item['specs_desc'] != "" || $pr_item['specs_cost'] != ""){
+
+                        $pr_item_id = ($pr_item['pr_item_detail_id'] ) ? $pr_item['pr_item_detail_id'] : null;
+                        $item_details = array(
+                            'pr_item_id'    => $key,
+                            'title'         => $pr_item['specs_name'],
+                            'description'   => $pr_item['specs_desc'],
+                            'cost'          => $pr_item['specs_cost']
+                        );
+
+                        $pr_detail_id = $this->pr_model->update_item_details($pr_item_id, $item_details);
+
+                        foreach($pr_item['item_details'] as $specs){
+
+                            $pr_specs_id = ($specs['pr_item_detail_specs_id'] ) ? $specs['pr_item_detail_specs_id'] : null;
+                            if($specs['qty'] != "" ||$specs['unit_id'] != "" ||$specs['name'] != "" ||$specs['cost'] != ""){
+                                $item_specs = array(
+                                    'prid_id'    => $pr_detail_id,
+                                    'qty'         => $specs['qty'],
+                                    'unit'         => $specs['unit_id'],
+                                    'name'   => $specs['name'],
+                                    'cost'          => $specs['cost']
+                                );
+
+                                $this->pr_model->update_item_specs($pr_specs_id, $item_specs);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
 
         $data['pr'] = $this->pr_model->viewPurchasedRequest($pr_id);
         $data['ppmp'] = $this->ppmp_model->getProcurementPlan();
+        $data['units'] = $this->units_model->getUnits();
 
         $this->load->view('default/header');
         $this->load->view('default/sidebar');

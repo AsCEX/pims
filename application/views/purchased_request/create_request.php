@@ -39,10 +39,10 @@
 
                         <form method="post" id="add-procurement-form" action="<?php echo site_url('purchased_request/add_purchase_request'); ?>">
 
-                        <div class="col-md-6">
-                            <div class="form-group col-md-12">
+                        <div class="col-md-12">
+                            <div class="form-group col-md-6">
                                 <label>Department</label>
-                                <select name="office_id" class="form-control input-lg">
+                                <select name="office_id" class="form-control input-lg" id="office_id">
                                     <?php foreach($offices as $office):?>
                                         <option value="<?php echo $office->id; ?>"><?php echo $office->name; ?></option>
                                     <?php endforeach; ?>
@@ -84,7 +84,7 @@
                             <div class="clearfix"></div>
 
 
-                            <div class="form-group col-md-12">
+                            <div class="form-group col-md-6">
                                 <label>Purpose</label>
                                 <textarea name="purpose" class="textarea" placeholder="Purpose text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
                             </div>
@@ -94,26 +94,17 @@
                         </div>
 
 
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-12">
                                     <table id="example1" class="table table-bordered table-striped">
                                         <thead>
                                         <tr>
-                                            <th width="1%"><input type="checkbox" id="check-all"/></th>
+                                            <th width="1%"><input name="select_all" value="1" type="checkbox"></th>
                                             <th width="5%">Code</th>
                                             <th>General Description</th>
-                                            <th></th>
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <?php foreach($ppmp as $pp): ?>
-                                            <tr>
-                                                <td><input type="checkbox" class="ppmp_details_id" name="ppmp_id[]" value="<?php echo $pp->ppmp_detail_id; ?>"/></td>
-                                                <td><?php echo $pp->code; ?></td>
-                                                <td><?php echo $pp->description; ?></td>
 
-                                                <td></td>
-                                            </tr>
-                                        <?php endforeach; ?>
                                         </tbody>
                                     </table>
 
@@ -140,15 +131,164 @@
 <script src="<?php echo site_url("assets/plugins/datatables/dataTables.bootstrap.min.js"); ?>"></script>
 <script src="<?php echo site_url("assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"); ?>"></script>
 <script>
+    //
+    // Updates "Select all" control in a data table
+    //
+    function updateDataTableSelectAllCtrl(table){
+        var $table             = table.table().node();
+        var $chkbox_all        = $('tbody input[type="checkbox"]', $table);
+        var $chkbox_checked    = $('tbody input[type="checkbox"]:checked', $table);
+        var chkbox_select_all  = $('thead input[name="select_all"]', $table).get(0);
+
+        // If none of the checkboxes are checked
+        if($chkbox_checked.length === 0){
+            chkbox_select_all.checked = false;
+            if('indeterminate' in chkbox_select_all){
+                chkbox_select_all.indeterminate = false;
+            }
+
+            // If all of the checkboxes are checked
+        } else if ($chkbox_checked.length === $chkbox_all.length){
+            chkbox_select_all.checked = true;
+            if('indeterminate' in chkbox_select_all){
+                chkbox_select_all.indeterminate = false;
+            }
+
+            // If some of the checkboxes are checked
+        } else {
+            chkbox_select_all.checked = true;
+            if('indeterminate' in chkbox_select_all){
+                chkbox_select_all.indeterminate = true;
+            }
+        }
+    }
+
+
+    $(document).ready(function (){
+        // Array holding selected row IDs
+        var rows_selected = [];
+        table = $('#example1').DataTable({
+            'ajax': {
+                'url': '<?php echo site_url('procurement_plan/getProcurement'); ?>',
+                "type": 'POST',
+                "data": function(d){
+                    d.office = $("#office_id").val()
+                }
+            /*{
+                    'office': $("#office_id").val()
+                }*/
+            },
+            'columnDefs': [{
+                'targets': 0,
+                'searchable': false,
+                'orderable': false,
+                'width': '1%',
+                'className': 'dt-body-center',
+                'render': function (data, type, full, meta){
+                    console.log(data);
+                    return '<input type="checkbox" name="ppmp_id[]" value="' + data + '">';
+                }
+            }],
+            'order': [[1, 'asc']],
+            'rowCallback': function(row, data, dataIndex){
+                // Get row ID
+                var rowId = data[0];
+
+                // If row ID is in the list of selected row IDs
+                if($.inArray(rowId, rows_selected) !== -1){
+                    $(row).find('input[type="checkbox"]').prop('checked', true);
+                    $(row).addClass('selected');
+                }
+            }
+        });
+
+        console.log(table.ajax);
+
+        // Handle click on checkbox
+        $('#example1 tbody').on('click', 'input[type="checkbox"]', function(e){
+            var $row = $(this).closest('tr');
+
+            // Get row data
+            var data = table.row($row).data();
+
+            // Get row ID
+            var rowId = data[0];
+
+            // Determine whether row ID is in the list of selected row IDs
+            var index = $.inArray(rowId, rows_selected);
+
+            // If checkbox is checked and row ID is not in list of selected row IDs
+            if(this.checked && index === -1){
+                rows_selected.push(rowId);
+
+                // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
+            } else if (!this.checked && index !== -1){
+                rows_selected.splice(index, 1);
+            }
+
+            if(this.checked){
+                $row.addClass('selected');
+            } else {
+                $row.removeClass('selected');
+            }
+
+            // Update state of "Select all" control
+            updateDataTableSelectAllCtrl(table);
+
+            // Prevent click event from propagating to parent
+            e.stopPropagation();
+        });
+
+        // Handle click on table cells with checkboxes
+        $('#example1').on('click', 'tbody td, thead th:first-child', function(e){
+            $(this).parent().find('input[type="checkbox"]').trigger('click');
+        });
+
+        // Handle click on "Select all" control
+        $('thead input[name="select_all"]', table.table().container()).on('click', function(e){
+            if(this.checked){
+                $('#example1 tbody input[type="checkbox"]:not(:checked)').trigger('click');
+            } else {
+                $('#example1 tbody input[type="checkbox"]:checked').trigger('click');
+            }
+
+            // Prevent click event from propagating to parent
+            e.stopPropagation();
+        });
+
+        // Handle table draw event
+        table.on('draw', function(){
+            // Update state of "Select all" control
+            updateDataTableSelectAllCtrl(table);
+        });
+
+        $("#office_id").change(function(){
+           table.ajax.reload();
+        });
+
+        // Handle form submission event
+        $('#frm-example').on('submit', function(e){
+            var form = this;
+
+            // Iterate over all selected checkboxes
+            $.each(rows_selected, function(index, rowId){
+                // Create a hidden element
+                $(form).append(
+                    $('<input>')
+                        .attr('type', 'hidden')
+                        .attr('name', 'id[]')
+                        .val(rowId)
+                );
+            });
+        });
+
+    });
+
     $(function() {
 
         //bootstrap WYSIHTML5 - text editor
         $(".textarea").wysihtml5();
 
-
-        $("#example1").DataTable({
-            "ordering": false,
-        });
 
         $("#add-ppmp").click(function () {
             $("#add-modal").modal({
@@ -159,3 +299,13 @@
 
     });
 </script>
+
+<style>
+    table.dataTable.select tbody tr,
+    table.dataTable thead th:first-child {
+        cursor: pointer;
+    }
+    table.dataTable tbody>tr.selected{
+        background-color: #acbad4;
+    }
+</style>

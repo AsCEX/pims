@@ -121,7 +121,9 @@ class Purchased_request_model extends CI_Model
     }
 
     public function getPRItemSpecs($prid_id){
-        $this->db->select("*");
+        $this->db->select("*,
+                        {$this->units_tbl}.id as unit_id,
+                        {$this->pr_item_detail_specs_tbl}.id as specs_id");
         $this->db->from($this->pr_item_detail_specs_tbl);
         $this->db->where("{$this->pr_item_detail_specs_tbl}.prid_id", $prid_id);
         $this->db->join("{$this->units_tbl}", "{$this->units_tbl}.id = {$this->pr_item_detail_specs_tbl}.unit", "left");
@@ -155,7 +157,6 @@ class Purchased_request_model extends CI_Model
 
     public function create_purchase_items($data){
 
-        pre_print($data);
         $ppmp = $this->db->insert($this->pr_items_tbl, $data);
 
         if($ppmp){
@@ -163,6 +164,67 @@ class Purchased_request_model extends CI_Model
         }else{
             return false;
         }
+    }
+
+    public function update_purchase_items($id, $data){
+
+        $this->db->where('id', $id);
+        $this->db->update($this->pr_items_tbl, $data);
+
+
+    }
+
+
+    public function create_item_details($data){
+
+        $pr_details = $this->db->insert($this->pr_item_details_tbl, $data);
+
+        if($pr_details){
+            return $this->db->insert_id();
+        }else{
+            return false;
+        }
+    }
+
+    public function update_item_details($pr_item_detail_id, $data){
+
+        if($pr_item_detail_id){
+
+            $this->db->where('id', $pr_item_detail_id);
+            $this->db->update($this->pr_item_details_tbl, $data);
+
+            return $pr_item_detail_id;
+        }else{
+
+            $pr_item_details = $this->db->insert($this->pr_item_details_tbl, $data);
+
+            if($pr_item_details){
+                return $this->db->insert_id();
+            }else{
+                return false;
+            }
+        }
+
+    }
+
+    public function update_item_specs($pr_item_specs_id, $data){
+
+        if($pr_item_specs_id){
+
+            $this->db->where('id', $pr_item_specs_id);
+            $this->db->update($this->pr_item_detail_specs_tbl, $data);
+
+        }else{
+
+            $pr_item_specs = $this->db->insert($this->pr_item_detail_specs_tbl, $data);
+
+            if($pr_item_specs){
+                return $this->db->insert_id();
+            }else{
+                return false;
+            }
+        }
+
     }
 
 }
