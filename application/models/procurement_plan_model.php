@@ -8,10 +8,10 @@ class Procurement_plan_model extends CI_Model
      *
      * @var array
      **/
-    public $procurement_plan_table = "procurement_plans";
-    public $procurement_schedules_table = "procurement_plan_schedules";
-    public $procurement_details_table = "procurement_plan_details";
-    public $units_table = "units";
+    public $procurement_plan_table = "tbl_procurement_plans";
+    public $procurement_schedules_table = "tbl_procurement_plan_schedules";
+    public $units_table = "tbl_units";
+    public $pr_items_tbl = "tbl_purchase_request_items";
 
     public function __construct()
     {
@@ -20,111 +20,286 @@ class Procurement_plan_model extends CI_Model
 
     public function getProcurementPlan($id = null){
 
-        /*$this->db->select("
-            {$this->procurement_plan_table}.id as ppmp_id,
-            {$this->procurement_details_table}.id as ppmp_detail_id,
-            {$this->procurement_details_table}.code,
-            {$this->procurement_details_table}.description,
-            {$this->procurement_details_table}.unit,
-            {$this->procurement_details_table}.budget,
-            sum({$this->procurement_schedules_table}.value) as qty,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
-        ");*/
         $this->db->select("
-            {$this->procurement_details_table}.id as ppmp_detail_id,
-            {$this->procurement_details_table}.code,
-            {$this->procurement_details_table}.description,
-            {$this->units_table}.unit_name,
-            {$this->procurement_details_table}.budget,
-            COALESCE(sum({$this->procurement_schedules_table}.value), 0) as qty,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
+            ppmp_id,
+            ppmp_code,
+            ppmp_description,
+            ppmp_budget,
+            unit_name,
+            COALESCE(sum(pps_value), 0) as qty,
+            GROUP_CONCAT( pps_month) as scheds,
+            GROUP_CONCAT( pps_value) as sched_values
         ");
 
         if($id){
-            $this->db->where("{$this->procurement_details_table}.id", $id);
+            $this->db->where("ppmp_id", $id);
         }
 
-        $this->db->join("{$this->units_table}","{$this->units_table}.id = {$this->procurement_details_table}.unit","left");
-        $this->db->join("{$this->procurement_schedules_table}","{$this->procurement_schedules_table}.ppmp_details_id = {$this->procurement_details_table}.id","left");
-        $this->db->group_by("{$this->procurement_details_table}.id");
-        $this->db->order_by("{$this->procurement_details_table}.created_date");
-        $rs = $this->db->get($this->procurement_details_table);
+        $this->db->join($this->units_table, "unit_id = ppmp_unit","left");
+        $this->db->join($this->procurement_schedules_table, "pps_ppmp_id = ppmp_id","left");
+        $this->db->group_by("ppmp_id");
+        $this->db->order_by("ppmp_created_date");
+        $rs = $this->db->get($this->procurement_plan_table);
 
         return $rs->result();
     }
 
-    public function getProcurementPlanWhere($param = array()){
+    public function getProcurementPlanById($id = null, $where = array('quarter'=>'', 'office'=>'')){
 
-        /*$this->db->select("
-            {$this->procurement_plan_table}.id as ppmp_id,
-            {$this->procurement_details_table}.id as ppmp_detail_id,
-            {$this->procurement_details_table}.code,
-            {$this->procurement_details_table}.description,
-            {$this->procurement_details_table}.unit,
-            {$this->procurement_details_table}.budget,
-            sum({$this->procurement_schedules_table}.value) as qty,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
-        ");*/
+        $fields = "
+                ppmp_id,
+                ppmp_code,
+                ppmp_description,
+                ppmp_unit,
+                ppmp_office_id,
+                ppmp_source_fund,
+                ppmp_category_id,
+                ppmp_budget,
+                unit_name,
+                COALESCE(sum(pps_value), 0) as qty,
+                GROUP_CONCAT( pps_month) as scheds,
+                GROUP_CONCAT( pps_value) as sched_values,
+                tot_budget.tot_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty), 2) as cost_per_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty) *  COALESCE(sum(pps_value), 0), 2) as qty_cost,
+            ";
+
+
+        $this->db->select($fields);
+
+        $this->db->where("ppmp_id", $id);
+
+        $this->db->join($this->units_table, "unit_id = ppmp_unit","left");
+        $this->db->join($this->procurement_schedules_table, "pps_ppmp_id = ppmp_id","left");
+        $this->db->join("(
+                    SELECT sum(pps_value) as tot_qty, pps_ppmp_id  FROM $this->procurement_schedules_table GROUP BY pps_ppmp_id
+        ) as tot_budget","tot_budget.pps_ppmp_id = ppmp_id","left");
+
+
+
+        $this->db->where("ppmp_id", $id);
+
+        if($where['office']){
+            $office = ($where['office']) ? $where['office'] : 0;
+            $this->db->where("ppmp_office_id" , $office);
+        }
+
+        if($where['quarter']){
+            $q = (($where['quarter']-1) * 3) + 1;
+            $this->db->where_in("pps_month", array($q, $q+1, $q+2));
+        }
+
+
+        $this->db->group_by("ppmp_id");
+        $this->db->order_by("ppmp_created_date");
+        $rs = $this->db->get($this->procurement_plan_table);
+
+        return $rs->row();
+    }
+
+    public function getLimitProcurementPlan($pr_id = null, $where = array(), $curPage = 1, $rowsPerPage = 10){
+
+
+        $fields = ($pr_id) ? "IF(pri_id,'checked','') as pri_chk," : "";
+        $fields .= "
+                ppmp_id,
+                ppmp_code,
+                ppmp_description,
+                ppmp_unit,
+                ppmp_office_id,
+                ppmp_source_fund,
+                ppmp_category_id,
+                ppmp_budget,
+                unit_name,
+                COALESCE(sum(pps_value), 0) as qty,
+                GROUP_CONCAT( pps_month) as scheds,
+                GROUP_CONCAT( pps_value) as sched_values,
+                tot_budget.tot_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty), 2) as cost_per_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty) *  COALESCE(sum(pps_value), 0), 2) as qty_cost,
+            ";
+
+
+        $this->db->select($fields);
+
+
+        $this->db->join($this->units_table, "unit_id = ppmp_unit","left");
+        $this->db->join($this->procurement_schedules_table, "pps_ppmp_id = ppmp_id","left");
+        $this->db->join("(
+                    SELECT sum(pps_value) as tot_qty, pps_ppmp_id  FROM $this->procurement_schedules_table GROUP BY pps_ppmp_id
+        ) as tot_budget","tot_budget.pps_ppmp_id = ppmp_id","left");
+
+        if($pr_id)
+            $this->db->join($this->pr_items_tbl, "pri_ppmp_id = ppmp_id AND pri_pr_id = " . $pr_id, "left");
+
+
+        if($where['quarter']){
+            $q = (($where['quarter']-1) * 3) + 1;
+            $this->db->where_in("pps_month", array($q, $q+1, $q+2));
+        }
+
+        if($where['office']){
+            $office = ($where['office']) ? $where['office'] : 0;
+            $this->db->where("ppmp_office_id" , $office);
+        }
+
+
+        $this->db->group_by("ppmp_id");
+        $this->db->order_by("ppmp_created_date");
+        $this->db->limit( $rowsPerPage, ($curPage-1) * $rowsPerPage);
+
+        $rs = $this->db->get($this->procurement_plan_table);
+
+        return $rs->result();
+    }
+
+    public function getLimitProcurementPlanPR($pr_id = null, $where = array(), $curPage = 1, $rowsPerPage = 10){
+
+
+        $fields = ($pr_id) ? "IF(pri_id,'checked','') as pri_chk," : "";
+        $fields .= "
+                ppmp_id,
+                ppmp_code,
+                ppmp_description,
+                ppmp_unit,
+                ppmp_office_id,
+                ppmp_source_fund,
+                ppmp_category_id,
+                ppmp_budget,
+                unit_name,
+                COALESCE(sum(pps_value), 0) as qty,
+                GROUP_CONCAT( pps_month) as scheds,
+                GROUP_CONCAT( pps_value) as sched_values,
+                tot_budget.tot_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty), 2) as cost_per_qty,
+                FORMAT((ppmp_budget/tot_budget.tot_qty) *  COALESCE(sum(pps_value), 0), 2) as qty_cost,
+            ";
+
+
+        $this->db->select($fields);
+
+
+        $this->db->join($this->units_table, "unit_id = ppmp_unit","left");
+        $this->db->join($this->procurement_schedules_table, "pps_ppmp_id = ppmp_id","left");
+        $this->db->join("(
+                    SELECT sum(pps_value) as tot_qty, pps_ppmp_id  FROM $this->procurement_schedules_table GROUP BY pps_ppmp_id
+        ) as tot_budget","tot_budget.pps_ppmp_id = ppmp_id","left");
+
+        if($pr_id)
+            $this->db->join($this->pr_items_tbl, "pri_ppmp_id = ppmp_id AND pri_pr_id = " . $pr_id, "left");
+
+
+        if($where['quarter']){
+            $q = (($where['quarter']-1) * 3) + 1;
+            $this->db->where_in("pps_month", array($q, $q+1, $q+2));
+        }else{
+            $this->db->where_in("pps_month", array(0));
+        }
+
+        $office = ($where['office']) ? $where['office'] : 0;
+        $this->db->where("ppmp_office_id" , $office);
+
+
+        $this->db->group_by("ppmp_id");
+        if($pr_id)
+            $this->db->order_by("pri_id", "DESC");
+        $this->db->order_by("ppmp_created_date");
+        $this->db->limit( $rowsPerPage, ($curPage-1) * $rowsPerPage);
+
+        $rs = $this->db->get($this->procurement_plan_table);
+
+        return $rs->result();
+    }
+
+    public function countRows(){
+
+        $this->db->select("count(*) as cnt");
+        $rs = $this->db->get($this->procurement_plan_table);
+
+        return $rs->row()->cnt;
+    }
+
+    public function getProcurementPlanWhere($office_id, $quarter, $ppmp_id = null){
+
         $this->db->select("
-            {$this->procurement_details_table}.id as ppmp_detail_id,
-            {$this->procurement_details_table}.code,
-            {$this->procurement_details_table}.description,
-            {$this->units_table}.unit_name,
-            {$this->procurement_details_table}.budget,
-            COALESCE(sum({$this->procurement_schedules_table}.value), 0) as qty,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.month) as scheds,
-            GROUP_CONCAT( {$this->procurement_schedules_table}.value) as sched_values
+            ppmp_id,
+            ppmp_code,
+            ppmp_description,
+            ppmp_unit,
+            ppmp_office_id,
+            ppmp_source_fund,
+            ppmp_category_id,
+            ppmp_budget,
+            unit_name,
+            COALESCE(sum(pps_value), 0) as qty,
+            GROUP_CONCAT( pps_month) as scheds,
+            GROUP_CONCAT( pps_value) as sched_values,
+            tot_budget.tot_qty,
+            (ppmp_budget/tot_budget.tot_qty) as cost_per_qty
         ");
 
-        if($param){
-            foreach($param as $k=>$p){
-                $this->db->where("{$this->procurement_details_table}." . $k , $p);
-            }
+        $q = (($quarter-1) * 3) + 1;
+
+        $this->db->where("ppmp_office_id" , $office_id);
+        $this->db->where_in("pps_month", array($q, $q+1, $q+2));
+
+        if($ppmp_id){
+            $this->db->where("ppmp_id", $ppmp_id);
         }
 
-        $this->db->join("{$this->units_table}","{$this->units_table}.id = {$this->procurement_details_table}.unit","left");
-        $this->db->join("{$this->procurement_schedules_table}","{$this->procurement_schedules_table}.ppmp_details_id = {$this->procurement_details_table}.id","left");
-        $this->db->group_by("{$this->procurement_details_table}.id");
-        $this->db->order_by("{$this->procurement_details_table}.created_date");
-        $rs = $this->db->get($this->procurement_details_table);
+        $this->db->join($this->units_table, "unit_id = ppmp_unit", "left");
+        $this->db->join($this->procurement_schedules_table, "ppmp_id = pps_ppmp_id","left");
+        $this->db->join("(
+                    SELECT sum(pps_value) as tot_qty, pps_ppmp_id  FROM $this->procurement_schedules_table GROUP BY pps_ppmp_id
+        ) as tot_budget","tot_budget.pps_ppmp_id = ppmp_id","left");
+        $this->db->group_by("ppmp_id");
+        $this->db->order_by("ppmp_created_date");
+        $rs = $this->db->get($this->procurement_plan_table);
+
 
         return $rs->result();
     }
 
-    public function create($data){
+    public function save($data, $id = null){
         $insert = array(
-            'code'          => $data['code'],
-            'description'   => $data['description'],
-//            'qty'           => $data['qty'],
-            'unit'          => $data['unit_id'],
-            'budget'        => $data['budget'],
-            'office_id'     => $data['office_id'],
-            'source_fund'   => $data['source_fund'],
-            'created_date'  => date('Y-m-d'),
-            'created_by'    => $this->session->userdata('user_id')
+            'ppmp_code'          => $data['ppmp_code'],
+            'ppmp_description'   => $data['ppmp_description'],
+            'ppmp_unit'          => $data['ppmp_unit'],
+            'ppmp_budget'        => $data['ppmp_budget'],
+            'ppmp_category_id'     => $data['ppmp_category'],
+            'ppmp_office_id'     => $data['ppmp_office_id'],
+            'ppmp_source_fund'   => $data['ppmp_source_fund'],
+            'ppmp_created_date'  => date('Y-m-d'),
+            'ppmp_created_by'    => $this->session->userdata('user_id')
         );
 
-        $ppmp = $this->db->insert($this->procurement_details_table, $insert);
+        if($id){
+            $this->db->where('ppmp_id', $id);
+            $this->db->update($this->procurement_plan_table, $insert);
 
-        if($ppmp){
-            return $this->db->insert_id();
+            $ppmp = $id;
         }else{
-            return false;
+            $this->db->insert($this->procurement_plan_table, $insert);
+            $ppmp = $this->db->insert_id();
         }
+
+        $this->purgeProcurementSchedule($ppmp, $data);
+
+        return $ppmp;
     }
 
 
-    public function addProcurementSchedule($ppmp_id, $schedule){
+    public function purgeProcurementSchedule($ppmp_id, $schedule){
+
+        $this->db->where('pps_ppmp_id', $ppmp_id);
+        $this->db->delete($this->procurement_schedules_table);
 
         foreach($schedule['month'] as $month=>$value){
 
             $sched = array(
-                'ppmp_details_id'   => $ppmp_id,
-                'month'             => $month,
-                'value'             => $value
+                'pps_ppmp_id'   => $ppmp_id,
+                'pps_month' => $month,
+                'pps_value' => $value
             );
 
             $this->db->insert($this->procurement_schedules_table, $sched);

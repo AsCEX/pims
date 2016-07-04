@@ -8,7 +8,7 @@ class Source_funds_model extends CI_Model
      *
      * @var array
      **/
-    public $source_funds_tbl = "source_funds";
+    public $source_funds_tbl = "tbl_source_funds";
 
     public function __construct()
     {

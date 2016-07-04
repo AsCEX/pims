@@ -36,7 +36,7 @@
                             <tr>
                                 <td width="30%">Department: <?php echo $p->dept_name; ?></td>
                                 <td width="10%">PR No.: </td>
-                                <td align="right" width="10%"><?php echo $p->pr_id; ?></td>
+                                <td align="right" width="10%"><?php echo $p->pr_code_id; ?></td>
                                 <td width="5%">Date: </td>
                                 <td align="right" width="10%"><?php echo date("M d Y", strtotime($p->created_date) ); ?></td>
                             </tr>
@@ -55,7 +55,7 @@
                                 <td align="right"><?php echo (strtotime($p->alobs_date) > 0) ? date("M d Y", strtotime($p->alobs_date) ) : ""; ?></td>
                             </tr>
                         </table>
-                        <table class="table table-bordered">
+                        <table class="table table-bordered pr-table">
                             <tr></tr>
                             <tr>
                                 <th width="5%">Item No.</th>
@@ -67,8 +67,21 @@
                             </tr>
                             <?php $specs = $this->pr_model->getPurchaseItems($p->pr_id);
                             $pr_total_cost = 0;?>
-                            <?php foreach($specs as $key=>$spec): ?>
-                                <tr>
+
+                            <?php foreach($specs as $key=>$spec): $row = ($key%2==0) ? "even":"odd"; ?>
+
+                                <tr class="<?php echo $row; ?>" >
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <?php echo "Category " . sprintf("%02d", $spec->cat_id) . " " . $spec->cat_code . " - " . $spec->cat_desc; ?>
+                                    </td>
+                                    <td></td>
+                                    <td align="right"></td>
+                                </tr>
+
+                                <tr class="<?php echo $row; ?>" style="background: #e6ffea;" >
                                     <td><?php echo $key+1; ?></td>
                                     <td><?php echo number_format($spec->qty, 0); ?></td>
                                     <td><?php echo strtolower($spec->unit_name); ?></td>
@@ -79,7 +92,7 @@
                                     <td align="right"><?php echo number_format($spec->cost, 2); ?></td>
                                 </tr>
                                 <?php if($spec->description): ?>
-                                    <tr>
+                                    <tr class="<?php echo $row; ?>" >
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -91,7 +104,7 @@
                                 <?php $item_details = $this->pr_model->getPurchaseItemDetails($spec->id); ?>
                                     <?php if($item_details): ?>
                                     <?php foreach($item_details as $key=>$item): ?>
-                                        <tr>
+                                        <tr class="<?php echo $row; ?>" >
                                             <td></td>
                                             <td></td>
                                             <td></td>
@@ -106,7 +119,7 @@
                                             $item_specs = $this->pr_model->getPRItemSpecs($item->id);
                                             foreach($item_specs as $key => $spec):
                                         ?>
-                                                <tr>
+                                                <tr class="<?php echo $row; ?>" >
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>

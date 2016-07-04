@@ -42,38 +42,33 @@
                         <div class="col-md-12">
                             <div class="form-group col-md-6">
                                 <label>Department</label>
-                                <select name="office_id" class="form-control input-lg" id="office_id">
+                                <select name="office_id" class="form-control input-lg required" id="office_id">
+                                    <option value="">Select Department</option>
                                     <?php foreach($offices as $office):?>
-                                        <option value="<?php echo $office->id; ?>"><?php echo $office->name; ?></option>
+                                        <option value="<?php echo $office->ofc_id; ?>"><?php echo $office->ofc_name; ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
 
-                            <div class="clearfix"></div>
-
                             <div class="form-group col-md-2">
                                 <label>SAI No:</label>
-                                <input class="form-control input-lg required" type="text" placeholder="" name="sai_no">
+                                <input class="form-control input-lg" type="text" placeholder="" name="sai_no">
                             </div>
-                            <div class="form-group col-md-4">
-                                <label>SAI DATE</label>
-                                <input class="form-control input-lg text-right" name="sai_date" type="text" placeholder="" />
-                            </div>
-                            <div class="clearfix"></div>
-
                             <div class="form-group col-md-2">
-                                <label>ALOBS No:</label>
-                                <input class="form-control input-lg required" type="text" placeholder="" name="alobs_no">
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label>ALOBS DATE</label>
-                                <input class="form-control input-lg text-right" name="alobs_date" type="text" placeholder="" />
+                                <label>SAI DATE</label>
+                                <div class="input-group date">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+                                    <input type="text" class="form-control pull-right datepicker input-lg" name="sai_date">
+                                </div>
                             </div>
                             <div class="clearfix"></div>
 
                             <div class="form-group col-md-6">
                                 <label>Schedule</label>
-                                <select name="quarter" class="form-control input-lg">
+                                <select name="quarter" class="form-control input-lg required" id="quarter">
+                                    <option value="">Select Quarter</option>
                                     <option value="1">Quarter 1</option>
                                     <option value="2">Quarter 2</option>
                                     <option value="3">Quarter 3</option>
@@ -81,12 +76,45 @@
                                 </select>
                             </div>
 
+                            <div class="form-group col-md-2">
+                                <label>ALOBS No:</label>
+                                <input class="form-control input-lg" type="text" placeholder="" name="alobs_no">
+                            </div>
+
+                            <div class="form-group col-md-2">
+                                <label>SAI DATE</label>
+                                <div class="input-group date">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+                                    <input class="form-control input-lg text-right datepicker" name="alobs_date" type="text" placeholder="" />
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+
+
                             <div class="clearfix"></div>
 
 
                             <div class="form-group col-md-6">
                                 <label>Purpose</label>
-                                <textarea name="purpose" class="textarea" placeholder="Purpose text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+                                <textarea name="purpose" class="form-control" placeholder="Purpose text here" style="width: 100%; height: 200px; font-size: 18px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+                            </div>
+
+                            <div class="form-group col-md-4">
+
+                                <div class="form-group col-md-12">
+                                    <label>Section</label>
+                                    <input class="form-control input-lg" name="section" type="text" placeholder="Section" />
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label>Requested By</label>
+                                    <select name="requested_by" class="form-control input-lg required">
+                                        <option value="">Select User</option>
+                                        <option value="1">AsCEX</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="clearfix"></div>
 
@@ -94,13 +122,16 @@
                         </div>
 
 
-                            <div class="form-group col-md-12">
+                            <div class="form-group col-md-12"  style="padding: 10px;border: 4px solid #d3d3d3;">
                                     <table id="example1" class="table table-bordered table-striped">
                                         <thead>
                                         <tr>
                                             <th width="1%"><input name="select_all" value="1" type="checkbox"></th>
                                             <th width="5%">Code</th>
                                             <th>General Description</th>
+                                            <th>Qty</th>
+                                            <th>Unit</th>
+                                            <th>Cost</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -125,6 +156,11 @@
     <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
+
+
+
+
+
 
 <!-- DataTables -->
 <script src="<?php echo site_url("assets/plugins/datatables/jquery.dataTables.min.js"); ?>"></script>
@@ -168,11 +204,13 @@
         // Array holding selected row IDs
         var rows_selected = [];
         table = $('#example1').DataTable({
+            'ordering': false,
             'ajax': {
                 'url': '<?php echo site_url('procurement_plan/getProcurement'); ?>',
                 "type": 'POST',
                 "data": function(d){
-                    d.office = $("#office_id").val()
+                    d.office = $("#office_id").val();
+                    d.quarter = $("#quarter").val();
                 }
             /*{
                     'office': $("#office_id").val()
@@ -202,7 +240,6 @@
             }
         });
 
-        console.log(table.ajax);
 
         // Handle click on checkbox
         $('#example1 tbody').on('click', 'input[type="checkbox"]', function(e){
@@ -263,6 +300,9 @@
         });
 
         $("#office_id").change(function(){
+           table.ajax.reload();
+        });
+        $("#quarter").change(function(){
            table.ajax.reload();
         });
 

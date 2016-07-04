@@ -14,11 +14,8 @@
 <!-- ./wrapper -->
 
 <!-- AdminLTE App -->
-<script src="<?php echo site_url("assets/dist/js/app.min.js"); ?>"></script>
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<!--<script src="assets/dist/js/pages/dashboard.js"></script>-->
-<!-- AdminLTE for demo purposes -->
-<script src="<?php echo site_url("assets/dist/js/demo.js"); ?>"></script>
+<!-- bootstrap datepicker -->
+<script src="<?php echo site_url("assets/dist/js/app.js"); ?>"></script>
 
 </body>
 </html>

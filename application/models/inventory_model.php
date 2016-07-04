@@ -8,8 +8,8 @@ class Inventory_model extends CI_Model
      *
      * @var array
      **/
-    public $procurement_plan_table = "procurement_plans";
-    public $procurement_schedules_table = "procurement_schedules";
+    public $procurement_plan_table = "tbl_procurement_plans";
+    public $procurement_schedules_table = "tbl_procurement_schedules";
 
     public function __construct()
     {

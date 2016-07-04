@@ -2,19 +2,23 @@
 
 <!-- DataTables -->
 <link rel="stylesheet" href="<?php echo site_url("assets/plugins/datatables/dataTables.bootstrap.css"); ?>">
+<script src="<?php echo site_url("assets/dist/js/jquery.grid.bootstrap.js"); ?>"></script>
+<script src="<?php echo site_url("assets/dist/js/modal.bootstrap.js"); ?>"></script>
+<script language="javascript">
+    $(document).ready(function(){
+        $('#grid_users').grid();
+    });
+</script>
 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Dashboard
+            Categories
             <small>Control panel</small>
         </h1>
-        <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Dashboard</li>
-        </ol>
+
     </section>
 
     <!-- Main content -->
@@ -24,45 +28,63 @@
 
             <!-- right col (We are only adding the ID to make the widgets sortable)-->
             <section class="col-lg-12">
-
                 <div class="box">
-                    <div class="box-header">
-                        <h3 class="box-title">Purchased Requests</h3>
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-                        <table id="example1" class="table table-bordered table-striped">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Full Name</th>
-                                <th>Office</th>
-                                <th>Roles</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach($users as $user): ?>
-                                <tr>
-                                    <td><?php echo $user->user_id; ?></td>
-                                    <td><?php echo $user->last_name . ", " . $user->first_name; ?></td>
-                                    <td><?php echo $user->office; ?></td>
-                                    <td><?php echo $user->user_roles; ?></td>
-                                    <td></td>
+
+                    <div class="grid panel panel-default" id="grid_users">
+                        <div class="panel-body">
+                            <a href="<?php echo site_url('users/addUser/'); ?>" class="btn btn-primary display-modal" title="Add New Category">Add New</a>
+                            <br /><br />
+                            <table cellpadding="0" cellspacing="0" border="0" class="table table-bordered table-hover table-striped">
+                                <thead>
+                                <tr class="header">
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Department</th>
+                                    <th>Role</th>
+                                    <th width="20"></th>
                                 </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <th>ID</th>
-                                <th>Full Name</th>
-                                <th>Office</th>
-                                <th>Roles</th>
-                                <th></th>
-                            </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tr class="init-row">
+                                    <td>
+                                        <span class="u_id"></span>
+                                    </td>
+                                    <td><span class="u_username"></span></td>
+                                    <td><span class="u_firstname"></span> <span class="u_middlename"></span> <span class="u_lastname"></span> <span class="u_extname"></span></td>
+                                    <td><span class="ofc_name"></span></td>
+                                    <td><span class="grp_description"></span></td>
+                                    <td>
+                                        <div class="quicklinks pull-right"><a href="<?php echo site_url('users/addUser'); ?>/" class="u_id display-modal" title="Edit Record"><i class="fa fa-pencil"></i></a></div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="grid-controls panel-footer">
+                            <div class="pad row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">Page: <span class="currentPage"></span> of <span class="totalPages"></span> of <span class="totalRecords"></span> records.</span>
+                                        <input type="text" class="form-control gotopage" name="gotopage">
+                                        <div class="input-group-btn">
+                                            <button type="button" class="btn btn-default go-page">Go To Page</button>
+                                        </div><!-- /btn-group -->
+                                    </div><!-- /input-group -->
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="paging pull-right">
+                                        <a href="#" class="page-previous page-link btn btn-default" rel="">Previous Page</a>
+                                        <a href="#" class="page-next page-link btn btn-default" rel="">Next Page</a>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="grid_url" value="<?php echo site_url('users/getUsers'); ?>" />
+                        <input type="hidden" name="parameters" value="" />
                     </div>
+                </div>
+
             </section>
             <!-- right col -->
         </div>
@@ -72,12 +94,3 @@
     <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
-
-<!-- DataTables -->
-<script src="<?php echo site_url("assets/plugins/datatables/jquery.dataTables.min.js"); ?>"></script>
-<script src="<?php echo site_url("assets/plugins/datatables/dataTables.bootstrap.min.js"); ?>"></script>
-<script>
-    $(function(){
-        $("#example1").DataTable();
-    });
-</script>

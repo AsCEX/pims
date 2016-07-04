@@ -3,26 +3,27 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Purchased_order extends MY_Controller {
 
-    /**
-     * Index Page for this controller.
-     *
-     * Maps to the following URL
-     * 		http://example.com/index.php/welcome
-     *	- or -
-     * 		http://example.com/index.php/welcome/index
-     *	- or -
-     * Since this controller is set as the default controller in
-     * config/routes.php, it's displayed at http://example.com/
-     *
-     * So any other public methods not prefixed with an underscore will
-     * map to /index.php/welcome/<method_name>
-     * @see https://codeigniter.com/user_guide/general/urls.html
-     */
+    function __construct(){
+        parent::__construct();
+        $this->load->model('purchased_request_model', 'pr_model');
+        $this->load->model('purchased_po_model', 'po_model');
+        $this->load->model('procurement_plan_model', 'ppmp_model');
+        $this->load->model('offices_model', 'office_model');
+        $this->load->model('categories_model', 'cat_model');
+        $this->load->model('units_model');
+        $this->load->model('source_funds_model');
+    }
+
     public function index()
     {
+
+        $pr = $this->po_model->getPurchasedRequest();
+        $data['pr'] = $pr;
+
         $this->load->view('default/header');
         $this->load->view('default/sidebar');
-        $this->load->view('default/index');
+        $this->load->view('purchased_order/index', $data);
         $this->load->view('default/footer');
     }
+
 }

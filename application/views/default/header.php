@@ -21,8 +21,17 @@
     <!-- bootstrap wysihtml5 - text editor -->
     <link rel="stylesheet" href="<?php echo site_url("assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css"); ?>">
 
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="<?php echo site_url("assets/plugins/daterangepicker/daterangepicker-bs3.css"); ?>">
+    <!-- bootstrap datepicker -->
+    <link rel="stylesheet" href="<?php echo site_url("assets/plugins/datepicker/datepicker3.css"); ?>">
+
     <!-- main css -->
     <link rel="stylesheet" href="<?php echo site_url("assets/dist/css/main-style.css"); ?>">
+
+    <script type="application/javascript">
+        var site_url = '<?php echo site_url(); ?>';
+    </script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -43,58 +52,42 @@
     <!-- Bootstrap 3.3.6 -->
     <script src="<?php echo site_url("assets/bootstrap/js/bootstrap.min.js"); ?>"></script>
     <script src="<?php echo site_url("assets/plugins/jquery-validator/jquery.validate.min.js"); ?>"></script>
+    <script src="<?php echo site_url("assets/plugins/datepicker/bootstrap-datepicker.js"); ?>"></script>
+
+    <!-- InputMask -->
+    <script src="<?php echo site_url("assets/plugins/numeric/jquery.numeric.js"); ?>"></script>
+
+    <script>
+        $(function(){
+            $('input[name=cost], input.cost').numeric();
+            $( document ).on( 'focus', ':input', function(){
+                $( this ).attr( 'autocomplete', 'off' );
+            });
+
+            $('.date-picker').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true
+            });
+            $("form").validate();
+        });
+    </script>
 </head>
-<body class="hold-transition skin-green sidebar-mini sidebar-collapse">
+<body class="hold-transition skin-green sidebar-mini">
 <div class="wrapper">
 
     <header class="main-header">
-        <!-- Logo -->
-        <a href="index2.html" class="logo">
-            <!-- mini logo for sidebar mini 50x50 pixels -->
-            <span class="logo-mini"><b>A</b>LT</span>
-            <!-- logo for regular state and mobile devices -->
-            <span class="logo-lg"><b>Admin</b>LTE</span>
-        </a>
-
         <!-- Header Navbar: style can be found in header.less -->
         <nav class="navbar navbar-static-top">
-
-            <!-- Sidebar toggle button-->
-            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-                <span class="sr-only">Toggle navigation</span>
-            </a>
-
+            <h3 style="float: left;color: #fff;margin: 10px;">Procurement and Inventory Management System</h3>
             <div class="navbar-custom-menu">
                 <ul class="nav navbar-nav">
 
                     <!-- User Account: style can be found in dropdown.less -->
                     <li class="dropdown user user-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <img src="assets/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
-                            <span class="hidden-xs">Alexander Pierce</span>
+                        <a href="<?php echo site_url('auth/logout'); ?>" class="" >
+                            <span class="hidden-xs">Sign Out</span>
+
                         </a>
-                        <ul class="dropdown-menu">
-                            <!-- User image -->
-                            <li class="user-header">
-                                <img src="assets/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
-
-                                <p>
-                                    Alexander Pierce - Web Developer
-                                    <small>Member since Nov. 2012</small>
-                                </p>
-                            </li>
-
-
-                            <!-- Menu Footer-->
-                            <li class="user-footer">
-                                <div class="pull-left">
-                                    <a href="#" class="btn btn-default btn-flat">Profile</a>
-                                </div>
-                                <div class="pull-right">
-                                    <a href="<?php echo site_url('auth/logout'); ?>" class="btn btn-default btn-flat">Sign out</a>
-                                </div>
-                            </li>
-                        </ul>
                     </li>
                 </ul>
             </div>
