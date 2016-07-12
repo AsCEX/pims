@@ -27,7 +27,7 @@ class Purchased_request_model extends CI_Model
     public function getPurchasedRequest($id = null){
 
         $this->db->select("*,
-            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), pr_id ) as pr_code_id,
+            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), LPAD(pr_id, 4, 0) ) as pr_code_id,
             pr_id,
             pr_created_date,
             ofc_name as dept_name
@@ -62,7 +62,7 @@ class Purchased_request_model extends CI_Model
     public function getLimitRequest($curPage = 1, $rowsPerPage = 10){
 
         $this->db->select("*,
-            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), pr_id ) as pr_code_id,
+            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), LPAD(pr_id, 4, 0) ) as pr_code_id,
             pr_id,
             pr_created_date,
             ofc_name as dept_name
@@ -81,7 +81,7 @@ class Purchased_request_model extends CI_Model
     public function getRequestById($id = null){
 
         $this->db->select("*,
-            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), pr_id ) as pr_code_id,
+            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), LPAD(pr_id, 4, 0) ) as pr_code_id,
             pr_id,
             pr_created_date,
             ofc_name as dept_name
@@ -131,7 +131,7 @@ class Purchased_request_model extends CI_Model
             pr_purpose,
             pr_created_date,
             ofc_name as dept_name,
-            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), pr_id ) as pr_code_id
+            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), LPAD(pr_id, 4, 0) ) as pr_code_id
         ");
         $this->db->from($this->pr_tbl);
         $this->db->where("pr_id", $id);
@@ -191,6 +191,33 @@ class Purchased_request_model extends CI_Model
     }
 
 
+    public function getRequestItems(){
+        $this->db->select("
+            *,
+            CONCAT_WS( '-', DATE_FORMAT(pr_created_date, '%y%m'), LPAD(pr_id, 4, 0) ) as pr_code_id
+        ");
+
+        $this->db->join($this->pr_tbl, "pr_id = pri_pr_id", "left");
+        $this->db->join($this->procurement_plan_table, "pri_ppmp_id = ppmp_id", "left");
+        $this->db->join("{$this->units_tbl}", "unit_id = ppmp_unit", "left");
+
+        $this->db->from($this->pr_items_tbl);
+        $rs = $this->db->get();
+
+        return $rs->result_array();
+    }
+
+    public function countItemRows(){
+        $this->db->select("*");
+        $this->db->join($this->pr_tbl, "pr_id = pri_pr_id", "left");
+
+        $this->db->from($this->pr_items_tbl);
+        $rs = $this->db->get();
+
+        return $rs->num_rows();
+    }
+
+
     public function savePurchasedRequest($data, $pr_id = null){
 
         if($pr_id){
@@ -247,176 +274,6 @@ class Purchased_request_model extends CI_Model
     public function deleteItem($pri_id = null){
         $this->db->where('pri_id', $pri_id);
         $this->db->delete($this->pr_items_tbl);
-    }
-
-
-    public function update($data, $id){
-        $insert = array(
-            'pr_department_id' => $data['office_id'],
-            'pr_sai_no'        => $data['sai_no'],
-            'pr_sai_date'      => $data['sai_date'],
-            'pr_alobs_no'      => $data['alobs_date'],
-            'pr_alobs_date'    => $data['alobs_date'],
-            'pr_quarter'       => $data['quarter'],
-            'pr_purpose'       => $data['purpose'],
-            'pr_section'       => $data['section'],
-            'pr_modified_date'  => date('Y-m-d'),
-            'pr_modified_by'    => $this->session->userdata('user_id')
-        );
-
-        $this->db->where('pr_id', $id);
-        $ppmp = $this->db->update($this->pr_tbl, $insert); echo $this->db->last_query();
-
-        return $id;
-    }
-
-    public function create_purchase_items($data){
-
-        $ppmp = $this->db->insert($this->pr_items_tbl, $data);
-
-        if($ppmp){
-            return $this->db->insert_id();
-        }else{
-            return false;
-        }
-    }
-
-    public function update_purchase_items($id, $data){
-        if($id){
-
-            $this->db->where('id', $id);
-            $this->db->update($this->pr_items_tbl, $data);
-
-            return $id;
-        }else{
-
-            $pr_items = $this->db->insert($this->pr_items_tbl, $data);
-
-            if($pr_items){
-                return $this->db->insert_id();
-            }else{
-                return false;
-            }
-        }
-    }
-
-
-    public function create_item_details($data){
-
-        $pr_details = $this->db->insert($this->pr_item_details_tbl, $data);
-
-        if($pr_details){
-            return $this->db->insert_id();
-        }else{
-            return false;
-        }
-    }
-
-    public function update_item_details($pr_item_detail_id, $data){
-
-        if($pr_item_detail_id){
-
-            $this->db->where('pri_id', $pr_item_detail_id);
-            $this->db->update($this->pr_item_details_tbl, $data);
-
-        }else{
-
-            $pr_item_details = $this->db->insert($this->pr_item_details_tbl, $data);
-
-            if($pr_item_details){
-                return $this->db->insert_id();
-            }else{
-                return false;
-            }
-        }
-
-    }
-
-    public function update_item_specs($pr_item_specs_id, $data){
-
-        if($pr_item_specs_id){
-
-            $this->db->where('prs_id', $pr_item_specs_id);
-            $this->db->update($this->pr_item_detail_specs_tbl, $data);
-
-        }else{
-
-            $pr_item_details = $this->db->insert($this->pr_item_detail_specs_tbl, $data);
-
-            if($pr_item_details){
-                return $this->db->insert_id();
-            }else{
-                return false;
-            }
-        }
-
-    }
-
-    public function purgePR($pr_id){
-        $items = $this->getPurchaseItems($pr_id);
-        $item_ids = array();
-        $item_detail_ids = array();
-        $item_detail_specs_ids = array();
-        foreach($items as $item){
-            $item_ids[] = $item->id;
-
-            $details = $this->getPurchaseItemDetails($item->id);
-            //pre_print($details);
-            foreach($details as $detail){
-                $item_detail_ids[] = $detail->id;
-
-                $specs = $this->getPRItemSpecs($detail->id);
-                //pre_print($specs);
-                foreach($specs as $spec){
-                    $item_detail_specs_ids[] = $spec->specs_id;
-                }
-            }
-
-        }
-        if($item_ids)
-            //$this->deletePRItems($item_ids);
-
-        if($item_detail_ids)
-            $this->deletePRItemDetails($item_detail_ids);
-
-        if($item_detail_specs_ids)
-            $this->deletePRItemDetailSpecs($item_detail_specs_ids);
-    }
-
-
-    public function deletePRItems($pr_id){
-
-        if(is_array($pr_id)){
-            $this->db->where_in('pri_id', $pr_id);
-        }else{
-            $this->db->where('pri_id', $pr_id);
-        }
-
-        $this->db->delete($this->pr_items_tbl);
-    }
-
-    public function deletePRItemDetails($pr_item_id)
-    {
-
-        if(is_array($pr_item_id)){
-            $this->db->where_in('prid_id', $pr_item_id);
-        }else{
-            $this->db->where('prid_id', $pr_item_id);
-        }
-
-
-        $this->db->delete($this->pr_item_details_tbl);
-    }
-
-    public function deletePRItemDetailSpecs($prid)
-    {
-        if(is_array($prid)){
-            $this->db->where_in('prs_id', $prid);
-        }else{
-            $this->db->where('prs_id', $prid);
-        }
-
-        $this->db->delete($this->pr_item_detail_specs_tbl);
     }
 
 }

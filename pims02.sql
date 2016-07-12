@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50626
 File Encoding         : 65001
 
-Date: 2016-07-01 12:16:38
+Date: 2016-07-12 09:28:44
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -25,7 +25,7 @@ CREATE TABLE `tbl_access_lists` (
   `class` varchar(50) DEFAULT NULL,
   `method` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_access_lists
@@ -39,6 +39,8 @@ INSERT INTO `tbl_access_lists` VALUES ('6', '1', 'suppliers', null);
 INSERT INTO `tbl_access_lists` VALUES ('7', '1', 'offices', null);
 INSERT INTO `tbl_access_lists` VALUES ('8', '1', 'units', null);
 INSERT INTO `tbl_access_lists` VALUES ('9', '1', 'users', null);
+INSERT INTO `tbl_access_lists` VALUES ('10', '1', 'inventory', null);
+INSERT INTO `tbl_access_lists` VALUES ('11', '1', 'funds', null);
 
 -- ----------------------------
 -- Table structure for `tbl_categories`
@@ -58,11 +60,6 @@ CREATE TABLE `tbl_categories` (
 INSERT INTO `tbl_categories` VALUES ('1', 'AV-A', 'Audio-Video Equipment - A');
 INSERT INTO `tbl_categories` VALUES ('2', 'AV-B', 'Audio-Video Equipment - B');
 INSERT INTO `tbl_categories` VALUES ('3', 'AV-C', 'Auido-Video Equipment - C');
-INSERT INTO `tbl_categories` VALUES ('4', 'asdfasdfa', 'sdfasd asdfasafdasdfa');
-INSERT INTO `tbl_categories` VALUES ('5', 'AVR', 'AVVEERSSFA');
-INSERT INTO `tbl_categories` VALUES ('6', 'ASCEX', 'AsssCEX');
-INSERT INTO `tbl_categories` VALUES ('7', '23141', 'asdfasd fasdfasfa');
-INSERT INTO `tbl_categories` VALUES ('8', '131', 'sdfasdfa');
 
 -- ----------------------------
 -- Table structure for `tbl_groups`
@@ -90,6 +87,31 @@ INSERT INTO `tbl_groups` VALUES ('9', 'adfas', 'dfasdfa');
 INSERT INTO `tbl_groups` VALUES ('10', 'asdfa', 'sdfasdfa');
 INSERT INTO `tbl_groups` VALUES ('11', 'asdfa', 'sdfadfasa');
 INSERT INTO `tbl_groups` VALUES ('12', 'adsfas', 'fasdf asdfa sdfasa');
+
+-- ----------------------------
+-- Table structure for `tbl_inventories`
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_inventories`;
+CREATE TABLE `tbl_inventories` (
+  `inv_id` int(11) NOT NULL AUTO_INCREMENT,
+  `inv_qty` decimal(11,2) DEFAULT NULL,
+  `inv_unit` int(11) DEFAULT NULL,
+  `inv_date_acquired` date DEFAULT NULL,
+  `inv_description` text,
+  `inv_unit_cost` decimal(11,2) DEFAULT NULL,
+  `inv_class_no` varchar(100) DEFAULT NULL,
+  `inv_property_no` varchar(100) DEFAULT NULL,
+  `inv_remarks` text,
+  `inv_received_from` int(11) DEFAULT NULL,
+  `inv_received_from_date` date DEFAULT NULL,
+  `inv_received_by` int(11) DEFAULT NULL,
+  `inv_received_by_date` date DEFAULT NULL,
+  PRIMARY KEY (`inv_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- ----------------------------
+-- Records of tbl_inventories
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `tbl_login_attempts`
@@ -132,12 +154,6 @@ CREATE TABLE `tbl_offices` (
 -- ----------------------------
 INSERT INTO `tbl_offices` VALUES ('1', 'CMO', '1011', 'City Mayor\'s Office', null, '1', '2016-06-14', null, null, null, null, '0');
 INSERT INTO `tbl_offices` VALUES ('2', 'SP', '3392', 'Sangguniang Panlungsod Office - Executive Services', null, '1', '2016-06-14', null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('3', '1asdfa', '21', 'sdfasdfaa1111111111', null, null, null, null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('4', 'asdfasdf', '212', 'sdfasdfasdfa', null, null, null, null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('5', 'adfasd fas', '322', 'dfasdfa dsa', null, null, null, null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('6', 'FSDF', '2322', 'FASDFASDFASDFS', null, null, null, null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('7', 'ASCEXSAXCX', '322', 'GSCG', null, null, null, null, null, null, null, '0');
-INSERT INTO `tbl_offices` VALUES ('8', 'AsDSFSDF', '321', 'adfa sdfa sdfaa', null, null, null, null, null, null, null, '0');
 
 -- ----------------------------
 -- Table structure for `tbl_procurement_plans`
@@ -160,13 +176,12 @@ CREATE TABLE `tbl_procurement_plans` (
   `ppmp_deleted_date` date DEFAULT NULL,
   `ppmp_deleted_by` int(11) DEFAULT NULL,
   PRIMARY KEY (`ppmp_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_procurement_plans
 -- ----------------------------
-INSERT INTO `tbl_procurement_plans` VALUES ('1', '2412', 'testetstess', null, '1', '12000.00', '2', '2', '1', '2016-06-30 00:00:00', '1', null, null, null, null);
-INSERT INTO `tbl_procurement_plans` VALUES ('2', '231', 'adsfasd asd faasdf asdfaasdfasdfa', null, '1', '34234222.00', '1', '1', '1', '2016-06-29 00:00:00', '1', null, null, null, null);
+INSERT INTO `tbl_procurement_plans` VALUES ('1', '321', 'Testing', null, '4', '12000.00', '1', '1', '2', '2016-07-05 00:00:00', '1', null, null, null, null);
 
 -- ----------------------------
 -- Table structure for `tbl_procurement_plan_schedules`
@@ -179,60 +194,48 @@ CREATE TABLE `tbl_procurement_plan_schedules` (
   `pps_value` double DEFAULT NULL,
   `pps_pr_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`pps_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_procurement_plan_schedules
 -- ----------------------------
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('25', '2', '1', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('26', '2', '2', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('27', '2', '3', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('28', '2', '4', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('29', '2', '5', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('30', '2', '6', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('31', '2', '7', '10', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('32', '2', '8', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('33', '2', '9', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('34', '2', '10', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('35', '2', '11', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('36', '2', '12', '0', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('49', '1', '1', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('50', '1', '2', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('51', '1', '3', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('52', '1', '4', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('53', '1', '5', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('54', '1', '6', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('55', '1', '7', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('56', '1', '8', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('57', '1', '9', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('58', '1', '10', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('59', '1', '11', '1', null);
-INSERT INTO `tbl_procurement_plan_schedules` VALUES ('60', '1', '12', '1', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('1', '1', '1', '5', '1');
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('2', '1', '2', '0', '1');
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('3', '1', '3', '0', '1');
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('4', '1', '4', '5', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('5', '1', '5', '0', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('6', '1', '6', '0', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('7', '1', '7', '5', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('8', '1', '8', '0', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('9', '1', '9', '0', null);
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('10', '1', '10', '5', '2');
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('11', '1', '11', '0', '2');
+INSERT INTO `tbl_procurement_plan_schedules` VALUES ('12', '1', '12', '0', '2');
 
 -- ----------------------------
--- Table structure for `tbl_purchased_order`
+-- Table structure for `tbl_purchased_orders`
 -- ----------------------------
-DROP TABLE IF EXISTS `tbl_purchased_order`;
-CREATE TABLE `tbl_purchased_order` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `supplier_id` int(11) DEFAULT NULL,
-  `address` text,
-  `gentlemen` text,
-  `mode_of_procurment` int(11) DEFAULT NULL,
-  `place_of_delivery` text,
-  `date_of_delivery` text,
-  `delivery_term` varchar(50) DEFAULT NULL,
-  `payment_term` varchar(100) DEFAULT NULL,
-  `created_by` int(11) DEFAULT NULL,
-  `created_date` datetime DEFAULT NULL,
-  `modified_by` int(11) DEFAULT NULL,
-  `modified_date` datetime DEFAULT NULL,
-  `status` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+DROP TABLE IF EXISTS `tbl_purchased_orders`;
+CREATE TABLE `tbl_purchased_orders` (
+  `po_id` int(11) NOT NULL AUTO_INCREMENT,
+  `po_supplier_id` int(11) DEFAULT NULL,
+  `po_department_id` int(11) DEFAULT NULL,
+  `po_gentlemen` text,
+  `po_mode_of_procurment` int(11) DEFAULT NULL,
+  `po_place_of_delivery` text,
+  `po_date_of_delivery` text,
+  `po_delivery_term` varchar(50) DEFAULT NULL,
+  `po_payment_term` varchar(100) DEFAULT NULL,
+  `po_created_by` int(11) DEFAULT NULL,
+  `po_created_date` date DEFAULT NULL,
+  `po_modified_by` int(11) DEFAULT NULL,
+  `po_modified_date` datetime DEFAULT NULL,
+  `po_status` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`po_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of tbl_purchased_order
+-- Records of tbl_purchased_orders
 -- ----------------------------
 
 -- ----------------------------
@@ -260,12 +263,14 @@ CREATE TABLE `tbl_purchase_requests` (
   `pr_id` int(11) NOT NULL AUTO_INCREMENT,
   `pr_department_id` int(11) DEFAULT NULL,
   `pr_sai_no` varchar(50) DEFAULT NULL,
-  `pr_sai_date` datetime DEFAULT NULL,
+  `pr_sai_date` date DEFAULT NULL,
   `pr_alobs_no` varchar(50) DEFAULT NULL,
-  `pr_alobs_date` datetime DEFAULT NULL,
+  `pr_alobs_date` date DEFAULT NULL,
   `pr_quarter` int(11) DEFAULT NULL,
   `pr_section` varchar(100) DEFAULT NULL,
   `pr_requested_by` int(11) DEFAULT NULL,
+  `pr_cash_availability_by` int(11) DEFAULT NULL,
+  `pr_approved_by` int(11) DEFAULT NULL,
   `pr_purpose` text,
   `pr_created_by` int(11) DEFAULT NULL,
   `pr_created_date` date DEFAULT NULL,
@@ -273,22 +278,13 @@ CREATE TABLE `tbl_purchase_requests` (
   `pr_modified_date` date DEFAULT NULL,
   PRIMARY KEY (`pr_id`),
   UNIQUE KEY `pr_id` (`pr_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_purchase_requests
 -- ----------------------------
-INSERT INTO `tbl_purchase_requests` VALUES ('1', '1', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '1', '', '2', 'Testing the Process', '1', '2016-06-29', '1', '2016-06-29');
-INSERT INTO `tbl_purchase_requests` VALUES ('2', '2', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '3', '', '2', 'Naedit na PR2', '1', '2016-06-29', '1', '2016-06-29');
-INSERT INTO `tbl_purchase_requests` VALUES ('3', '1', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', '2', '', '1', '2016-06-29', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('4', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('5', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('6', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('7', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('8', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('9', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('10', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, 'ladfasf as fasdfa as fa', '1', '2016-06-30', null, null);
-INSERT INTO `tbl_purchase_requests` VALUES ('11', '2', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '1', '', null, '', '1', '2016-06-30', null, null);
+INSERT INTO `tbl_purchase_requests` VALUES ('1', '1', '', '0000-00-00', '', '0000-00-00', '1', '', '1', null, null, '', '1', '2016-07-06', '1', '2016-07-06');
+INSERT INTO `tbl_purchase_requests` VALUES ('2', '1', '', '0000-00-00', '', '0000-00-00', '4', '', '1', null, null, '', '1', '2016-07-06', '1', '2016-07-06');
 
 -- ----------------------------
 -- Table structure for `tbl_purchase_request_items`
@@ -298,20 +294,17 @@ CREATE TABLE `tbl_purchase_request_items` (
   `pri_id` int(11) NOT NULL AUTO_INCREMENT,
   `pri_pr_id` int(11) DEFAULT NULL,
   `pri_ppmp_id` int(11) DEFAULT NULL,
-  `pri_qty` decimal(11,4) DEFAULT NULL,
+  `pri_qty` decimal(11,2) DEFAULT NULL,
   `pri_description` text,
   `pri_cost` decimal(11,2) DEFAULT NULL,
   PRIMARY KEY (`pri_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_purchase_request_items
 -- ----------------------------
-INSERT INTO `tbl_purchase_request_items` VALUES ('1', '1', '1', '3.0000', '', '3000.00');
-INSERT INTO `tbl_purchase_request_items` VALUES ('2', '2', '1', '3.0000', 'test', '3000.00');
-INSERT INTO `tbl_purchase_request_items` VALUES ('3', '3', '1', '3.0000', '', '3000.00');
-INSERT INTO `tbl_purchase_request_items` VALUES ('4', '10', '1', '3.0000', '', '3000.00');
-INSERT INTO `tbl_purchase_request_items` VALUES ('5', '11', '1', '3.0000', '', '3000.00');
+INSERT INTO `tbl_purchase_request_items` VALUES ('1', '1', '1', '5.00', 'quarter one', '3000.00');
+INSERT INTO `tbl_purchase_request_items` VALUES ('3', '2', '1', '5.00', 'quarter four', '3000.00');
 
 -- ----------------------------
 -- Table structure for `tbl_purchase_request_item_details`
@@ -323,13 +316,14 @@ CREATE TABLE `tbl_purchase_request_item_details` (
   `prid_title` varchar(50) DEFAULT NULL,
   `prid_description` text,
   `prid_cost` decimal(11,2) DEFAULT NULL,
+  `prid_po_description` text,
+  `prid_po_cost` decimal(11,2) DEFAULT NULL,
   PRIMARY KEY (`prid_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_purchase_request_item_details
 -- ----------------------------
-INSERT INTO `tbl_purchase_request_item_details` VALUES ('16', '2', 'asdf', 'asdfasd', '0.00');
 
 -- ----------------------------
 -- Table structure for `tbl_purchase_request_item_detail_specs`
@@ -342,15 +336,13 @@ CREATE TABLE `tbl_purchase_request_item_detail_specs` (
   `prs_qty` decimal(11,4) DEFAULT NULL,
   `prs_unit` int(11) DEFAULT NULL,
   `prs_cost` decimal(11,2) DEFAULT NULL,
+  `prc_po_cost` decimal(11,2) DEFAULT NULL,
   PRIMARY KEY (`prs_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records of tbl_purchase_request_item_detail_specs
 -- ----------------------------
-INSERT INTO `tbl_purchase_request_item_detail_specs` VALUES ('19', '16', 'adsfasdfa1', '121.0000', '1', '121.00');
-INSERT INTO `tbl_purchase_request_item_detail_specs` VALUES ('20', '16', 'asdasdf', '12.0000', '1', '0.00');
-INSERT INTO `tbl_purchase_request_item_detail_specs` VALUES ('21', '16', 'asdfasdf', '2.0000', '1', '121.00');
 
 -- ----------------------------
 -- Table structure for `tbl_source_funds`
@@ -390,21 +382,21 @@ INSERT INTO `tbl_sub_categories` VALUES ('1', '1', '1', 'Sample Category');
 -- ----------------------------
 DROP TABLE IF EXISTS `tbl_suppliers`;
 CREATE TABLE `tbl_suppliers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `business_name` varchar(100) DEFAULT NULL,
-  `first_name` varchar(50) DEFAULT NULL,
-  `middle_name` varchar(50) DEFAULT NULL,
-  `last_name` varchar(50) DEFAULT NULL,
-  `ext_name` varchar(5) DEFAULT NULL,
-  `address` text,
-  `created_by` int(11) DEFAULT NULL,
-  `created_date` datetime DEFAULT NULL,
-  `modified_by` int(11) DEFAULT NULL,
-  `modified_date` datetime DEFAULT NULL,
-  `deleted_by` int(11) DEFAULT NULL,
-  `deleted_date` datetime DEFAULT NULL,
-  `status` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`id`)
+  `s_id` int(11) NOT NULL AUTO_INCREMENT,
+  `s_business_name` varchar(100) DEFAULT NULL,
+  `s_first_name` varchar(50) DEFAULT NULL,
+  `s_middle_name` varchar(50) DEFAULT NULL,
+  `s_last_name` varchar(50) DEFAULT NULL,
+  `s_ext_name` varchar(5) DEFAULT NULL,
+  `s_address` text,
+  `s_created_by` int(11) DEFAULT NULL,
+  `s_created_date` datetime DEFAULT NULL,
+  `s_modified_by` int(11) DEFAULT NULL,
+  `s_modified_date` datetime DEFAULT NULL,
+  `s_deleted_by` int(11) DEFAULT NULL,
+  `s_deleted_date` datetime DEFAULT NULL,
+  `s_status` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`s_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
@@ -509,5 +501,5 @@ CREATE TABLE `users` (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('1', '127.0.0.1', 'administrator', '$2a$07$SeBknntpZror9uyftVopmu61qg0ms8Qv1yV6FG.kQOSM.9QhmTo36', '', 'admin@admin.com', '', null, null, null, '1268889823', '1467337926', '1', 'Admin', 'istrator', '1', '0');
+INSERT INTO `users` VALUES ('1', '127.0.0.1', 'administrator', '$2a$07$SeBknntpZror9uyftVopmu61qg0ms8Qv1yV6FG.kQOSM.9QhmTo36', '', 'admin@admin.com', '', null, null, null, '1268889823', '1468283974', '1', 'Admin', 'istrator', '1', '0');
 INSERT INTO `users` VALUES ('2', '::1', 'ascex', '$2y$08$hvLIMzOZX9Wc4xwawfpgkugIfP3w/6ajgCHlTzMc8x4WUnz6QwjIK', null, 'yiu.ascex@gmail.com', null, null, null, null, '1465946298', '1465946765', '1', 'Allan', 'Cabusora', '1', '9285487265');

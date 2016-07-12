@@ -86,7 +86,18 @@ class MY_Controller extends CI_Controller {
                 'icon_class'    => 'fa-cubes',
                 'label'         => 'Inventory',
                 'id'            => 'inventory',
-                'items'         => array()
+                'items'         => array(
+                    array(
+                        'url' => site_url('inventory'),
+                        'label' => 'ARE',
+                        'id'    => 'inventory'
+                    ),
+                    array(
+                        'url' => site_url('groups'),
+                        'label' => 'PRS',
+                        'id'    => 'inventory'
+                    )
+                )
             ),
             array(
                 'icon_class'    => 'fa-users',

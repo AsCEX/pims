@@ -78,7 +78,7 @@
     <header class="main-header">
         <!-- Header Navbar: style can be found in header.less -->
         <nav class="navbar navbar-static-top">
-            <h3 style="float: left;color: #fff;margin: 10px;">Procurement and Inventory Management System</h3>
+            <h3 style="float: left;color: #fff;margin: 0 10px;font-size: 20px;line-height: 50px;">Procurement and Inventory Management System</h3>
             <div class="navbar-custom-menu">
                 <ul class="nav navbar-nav">
 

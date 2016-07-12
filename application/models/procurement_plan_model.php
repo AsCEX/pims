@@ -199,6 +199,8 @@ class Procurement_plan_model extends CI_Model
         $office = ($where['office']) ? $where['office'] : 0;
         $this->db->where("ppmp_office_id" , $office);
 
+        $this->db->where('pps_pr_id IS NULL', null, false);
+        $this->db->or_where('pps_pr_id', $pr_id);
 
         $this->db->group_by("ppmp_id");
         if($pr_id)
@@ -305,6 +307,20 @@ class Procurement_plan_model extends CI_Model
             $this->db->insert($this->procurement_schedules_table, $sched);
         }
 
+    }
+
+    public function assignPRtoPPMP($pr_id = null, $ppmp_id=null, $quarter = null){
+
+        $q = get_quarter_starting_month($quarter);
+
+        $update = array(
+            'pps_pr_id' => $pr_id
+        );
+
+        $this->db->where('pps_ppmp_id', $ppmp_id);
+        $this->db->where_in("pps_month", array($q, $q+1, $q+2));
+
+        $this->db->update($this->procurement_schedules_table, $update);
     }
 
 }

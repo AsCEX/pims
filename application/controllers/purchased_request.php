@@ -215,6 +215,9 @@ class Purchased_request extends MY_Controller {
                 );
 
                 $pri_id = $this->pr_model->saveItems($pri);
+
+                $this->ppmp_model->assignPRtoPPMP($pr_id, $pp->ppmp_id, $this->input->post('pr_quarter'));
+
                 $this->processTempItems($pr_id, $pp->ppmp_id, $pri_id);
             }
         }
@@ -329,5 +332,20 @@ class Purchased_request extends MY_Controller {
 
     }
 
+    public function getRequestItems(){
+
+
+        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+        $items = $this->pr_model->getRequestItems($page);
+        $rows = $this->pr_model->countItemRows();
+        $info = ['totalRecords'=> $rows, 'recordCount'=> count($items), 'currentPage'=>$page, 'totalPages'=>ceil($rows/10)];
+        $resultSet['info'] = $info;
+        $resultSet['data'] = $items;
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($resultSet) );
+    }
 
 }
